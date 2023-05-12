@@ -49,7 +49,7 @@ equivalents = {
     "F": 0
     }
 
-def standardize(rev):
+def standardize(rev):  # some of them are /4 and some /5. Better eval?
     if "/" in str(rev):
         return float(rev[:rev.index("/")])
     else:
@@ -82,7 +82,7 @@ criticsdf.dropna(axis=0,inplace=True)
 criticsdf['review_score'] = criticsdf['review_score'].round().astype(int)
 
 
-df = pd.read_csv('test_over500.csv')
+df = pd.read_csv('test_over500.csv')  # Is it me or there are multiple Horror columns in this dataframe? 
 
 
 
@@ -102,7 +102,7 @@ elif dashboard == 'Our recommandation algorithm':
 
     num_sim = st.slider('How many similar movies do you want to see?', 1, 10, 5)
 
-    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)
+    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)  
     X= df[columns_of_interest]
     distanceKNN = NearestNeighbors(n_neighbors = num_sim+1).fit(X)
     coord = distanceKNN.kneighbors(df.loc[df['originalTitle']==movie_title, columns_of_interest])
@@ -126,6 +126,7 @@ elif dashboard == 'Hate':
     chosenflicks = pd.DataFrame({'rotten_tomatoes_link': chosenones['rotten_tomatoes_link'].unique()})
     chosenflicks['AverageScore'] = chosenflicks['rotten_tomatoes_link'].map(average_scores)
     chosenflicks['NumVotes'] = chosenflicks['rotten_tomatoes_link'].map(num_votes)
+    # How about you just do the sum of the votes? avg * numvotes, avg, number of votes
     chosenflicks['ObjectiveScore'] = chosenflicks.apply(lambda row: (score_weight * row['AverageScore']) + (votes_weight * row['NumVotes']) + random.uniform(-0.6, 0.6), axis=1)
     #chosenflicks['rotten_tomatoes_link'] = chosenflicks['rotten_tomatoes_link'].apply(dubber)
     chosenflicks = chosenflicks.sort_values(['ObjectiveScore'], ascending=False)
