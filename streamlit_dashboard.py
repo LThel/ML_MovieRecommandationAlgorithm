@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import NearestNeighbors
+
 import regex as re
 import random
 
@@ -80,10 +81,17 @@ criticsdf=criticsdf.reindex(columns=columns_titles)
 criticsdf.dropna(axis=0,inplace=True)
 criticsdf['review_score'] = criticsdf['review_score'].round().astype(int)
 
+
+df = pd.read_csv('test_over500.csv')
+
+
+
 #Presentation of the dataframe
 dashboard = st.sidebar.radio(
     "What dashboard do you want to see ?",
+
     ('Data visualisation', 'Our recommandation algorithm',"Hate"))
+
 
 if dashboard == 'Data visualisation':
      st.write('Not done yet')
