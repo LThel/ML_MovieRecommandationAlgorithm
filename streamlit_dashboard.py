@@ -49,9 +49,12 @@ equivalents = {
     "F": 0
     }
 
-def standardize(rev):
+def standardize(rev):  # some of them are /4 and some /5. Better eval?
     if "/" in str(rev):
-        return float(rev[:rev.index("/")])
+        try:
+            return eval(rev) * 100
+        except:
+            pass
     else:
         score = equivalents.get(rev)
         if score is not None:
@@ -82,7 +85,7 @@ criticsdf.dropna(axis=0,inplace=True)
 criticsdf['review_score'] = criticsdf['review_score'].round().astype(int)
 
 
-df = pd.read_csv('test_over500.csv')
+df = pd.read_csv('test_over500.csv')  # Is it me or there are multiple Horror columns in this dataframe? 
 
 
 
@@ -102,7 +105,7 @@ elif dashboard == 'Our recommandation algorithm':
 
     num_sim = st.slider('How many similar movies do you want to see?', 1, 10, 5)
 
-    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)
+    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)  
     X= df[columns_of_interest]
     distanceKNN = NearestNeighbors(n_neighbors = num_sim+1).fit(X)
     coord = distanceKNN.kneighbors(df.loc[df['originalTitle']==movie_title, columns_of_interest])
@@ -116,17 +119,34 @@ elif dashboard == 'Hate':
     mov= filtered_df['rotten_tomatoes_link'].values[0]
 
     moviehaters = criticsdf[(criticsdf['rotten_tomatoes_link'] == mov) &
-    ((criticsdf['review_score'] == 1) | (criticsdf['review_score'] == 2))]
+    (criticsdf['review_score'] <= 2.5)]
     #movieboys = criticdummies[(criticdummies['review_type'] == "Fresh")]
-    crits = criticsdf["critic_name"].values.tolist()
+    crits = moviehaters["critic_name"].values.tolist()
     chosenones = criticsdf.loc[(criticsdf['critic_name'].isin(crits))]
     chosenones["review_score"] = chosenones["review_score"].apply(standardize2)
     average_scores = chosenones.groupby('rotten_tomatoes_link')['review_score'].mean()
     num_votes = chosenones.groupby('rotten_tomatoes_link')['review_type'].count()
     chosenflicks = pd.DataFrame({'rotten_tomatoes_link': chosenones['rotten_tomatoes_link'].unique()})
+    chosenflicks = chosenflicks[chosenflicks.rotten_tomatoes_link != mov]
     chosenflicks['AverageScore'] = chosenflicks['rotten_tomatoes_link'].map(average_scores)
+    chosenflicks = chosenflicks[chosenflicks.AverageScore > 3.99]
     chosenflicks['NumVotes'] = chosenflicks['rotten_tomatoes_link'].map(num_votes)
+    # How about you just do the sum of the votes? avg * numvotes, avg, number of votes
     chosenflicks['ObjectiveScore'] = chosenflicks.apply(lambda row: (score_weight * row['AverageScore']) + (votes_weight * row['NumVotes']) + random.uniform(-0.6, 0.6), axis=1)
     #chosenflicks['rotten_tomatoes_link'] = chosenflicks['rotten_tomatoes_link'].apply(dubber)
     chosenflicks = chosenflicks.sort_values(['ObjectiveScore'], ascending=False)
-    st.dataframe(data=chosenflicks, width=None, height=None, use_container_width=True)
+    recs = chosenflicks.head(3)
+    chosenflicks = chosenflicks.sort_values(['AverageScore'], ascending=False)
+    recs = recs.append(chosenflicks.head(3), ignore_index = True)
+    chosenflicks = chosenflicks.sort_values(['NumVotes'], ascending=False)
+    recs = recs.append(chosenflicks.head(3), ignore_index = True)
+    recs.drop(["ObjectiveScore","NumVotes"],axis = 1, inplace = True)
+    recs.drop_duplicates(inplace=True,keep="first")
+    recs = recs.sort_values(['AverageScore'], ascending=False)
+    recs['rotten_tomatoes_link'] = recs['rotten_tomatoes_link'].apply(dubber)
+    if recs.empty:
+        st.write("Looks like no critics hated this movie. You're probably either a diehard cinematophile or just insufferable. ")
+    else:
+        st.write('Critics who also hated this movie liked these movies: ')
+        st.dataframe(data=recs, width=None, height=None, use_container_width=True)
+    
