@@ -116,9 +116,32 @@ if dashboard == 'A short presentation of the database':
     fig.tight_layout()
     st.pyplot(fig)
 
-elif dashboard == 'Data visualisation':
-     df_viz = pd.read_csv('test_over500.csv')
-        
+elif dashboard == 'The evolution of cinema over the years':
+    st.title('The evolution of the cinema through the years')
+    
+    #Lengthtime over years
+    st.subheader("Evolution of the movie's length")
+    df_titles_len = df_titles.dropna()
+    df_titles_len = df_titles_len[df_titles_len['runtimeMinutes']!='\\N'][df_titles_len['startYear']!='\\N']
+    mean_per_year = df_titles_len[['startYear', 'runtimeMinutes']][df_titles_len['runtimeMinutes']!="\\N"][df_titles_len['startYear']!="\\N"].groupby(by = df_titles_len['startYear']).median()
+    st.write('Median of the movies before 1925 =', mean_per_year[mean_per_year['startYear']<1925]['runtimeMinutes'].median(), ' minutes. Median of the movies after 2010 =', mean_per_year[mean_per_year['startYear']<2010]['runtimeMinutes'].median(), 'minutes.')   
+    fig, ax = plt.subplots()
+    sns.scatterplot(data = mean_per_year, x = 'startYear', y = 'runtimeMinutes', color = 'red')
+    ax.set_title('Median lengthtime regarding the year')
+    ax.set_ylabel('Lengthtime in minutes')
+    ax.set_xlabel('Year')
+    st.pyplot(fig)
+    
+    #Ratings over years
+    st.subheader("Evolution of the ratings")
+    fig, ax = plt.subplots()
+    mean_per_year = df_ov500[['startYear', 'averageRating']][df_ov500['averageRating']!="\\N"][df_ov500['startYear']!="\\N"].groupby(by = df_ov500['startYear']).mean()
+    sns.scatterplot(data = mean_per_year, x = 'startYear', y = 'averageRating', color = 'red')
+    ax.set_title('Average ratings regarding the year')
+    ax.set_ylabel('Rate over 10')
+    ax.set_xlabel('Year')
+    st.pyplot(fig)
+
 elif dashboard == 'Our recommandation algorithm':
     st.title('Welcome to our recommandation algorithm page !')
     # Recommandation algorithm page     
