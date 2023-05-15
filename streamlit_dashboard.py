@@ -100,6 +100,8 @@ dashboard = st.sidebar.radio(
     ('A short presentation of the database', 'The evolution of cinema over the years', 'Our recommandation algorithm',"Hate"))
 
 if dashboard == 'A short presentation of the database':
+    st.title('An overview of the database')
+
     fig, ax = plt.subplots(3, 1, figsize = (10, 15))
     sns.histplot(data = df_titles['startYear'][df_titles['startYear']!='\\N'].apply(lambda x : int(x)), binwidth = 5, ax = ax[0], color = 'red')
     ax[0].set_title('Number of movies per year')
@@ -121,12 +123,11 @@ elif dashboard == 'The evolution of cinema over the years':
     
     #Lengthtime over years
     st.subheader("Evolution of the movie's length")
-    df_titles_len = df_titles.dropna()
-    df_titles_len = df_titles_len[df_titles_len['runtimeMinutes']!='\\N'][df_titles_len['startYear']!='\\N']
+    df_titles_len = df_titles
     mean_per_year = df_titles_len[['startYear', 'runtimeMinutes']][df_titles_len['runtimeMinutes']!="\\N"][df_titles_len['startYear']!="\\N"].groupby(by = df_titles_len['startYear']).median()
-    st.write('Median of the movies before 1925 =', mean_per_year[mean_per_year['startYear']<1925]['runtimeMinutes'].median(), ' minutes. Median of the movies after 2010 =', mean_per_year[mean_per_year['startYear']<2010]['runtimeMinutes'].median(), 'minutes.')   
+    st.write('Median of the movies (in minutes) :',  ' BEFORE 1925 =', mean_per_year[mean_per_year['startYear']<1925]['runtimeMinutes'].median(), '   ', 'AFTER 2010 =', mean_per_year[mean_per_year['startYear']<2010]['runtimeMinutes'].median(), 'minutes.')   
     fig, ax = plt.subplots()
-    sns.scatterplot(data = mean_per_year, x = 'startYear', y = 'runtimeMinutes', color = 'red')
+    sns.scatterplot(data = mean_per_year[mean_per_year['runtimeMinutes']<1000], x = 'startYear', y = 'runtimeMinutes', color = 'red')
     ax.set_title('Median lengthtime regarding the year')
     ax.set_ylabel('Lengthtime in minutes')
     ax.set_xlabel('Year')
@@ -141,6 +142,12 @@ elif dashboard == 'The evolution of cinema over the years':
     ax.set_ylabel('Rate over 10')
     ax.set_xlabel('Year')
     st.pyplot(fig)
+    
+    #Dynamic plot of genres over years
+    st.subheader("Evolution of the genres")
+    video_file = open('EvolutionTOP10Genres.mp4', 'rb')
+    video_bytes = video_file.read()
+    st.video(video_bytes)
 
 elif dashboard == 'Our recommandation algorithm':
     st.title('Welcome to our recommandation algorithm page !')
@@ -149,8 +156,7 @@ elif dashboard == 'Our recommandation algorithm':
     num_sim = st.slider('How many similar movies do you want to see?', 1, 10, 5)
     database = st.radio(
     "Select the database to explore :",
-    ('Anglophone', 'Non Anglophone', 'All'))
-    
+    ('All', 'Anglophone', 'Non Anglophone'))    
     if database == 'Anglophone':
         columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:-4].columns)
         X= df_US[columns_of_interest]
@@ -173,12 +179,6 @@ elif dashboard == 'Our recommandation algorithm':
         for i in range(1, num_sim+1):
             st.write('TOP', i, ':' , df['originalTitle'].iloc[coord[1][0][i]],'(',str(df['startYear'].iloc[coord[1][0][i]]),')')
 
-    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)  
-    X= df[columns_of_interest]
-    distanceKNN = NearestNeighbors(n_neighbors = num_sim+1).fit(X)
-    coord = distanceKNN.kneighbors(df.loc[df['originalTitle']==movie_title, columns_of_interest])
-    for i in range(1, num_sim+1):
-        st.write('TOP', i, ':' , df['originalTitle'].iloc[coord[1][0][i]],'(',str(df['startYear'].iloc[coord[1][0][i]]),')')
 elif dashboard == 'Hate':
     st.title("Pick a movie you hate!")
     movie_title = st.selectbox("Please enter your least favourite movie's title : ", (list(moviedf['movie_title'])))
