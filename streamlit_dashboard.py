@@ -174,8 +174,9 @@ elif dashboard == 'The evolution of cinema over the years':
         ax.set_xlabel('Year')
         st.pyplot(fig)
     else:
-        bcr.bar_chart_race(critics)
-
+        video_file = open('EvolutionTOP10Genres.mp4', 'rb')
+        video_bytes = video_file.read()
+        st.video(video_bytes)
 elif dashboard == 'Crush':
     st.title('Pick a movie you have a crush on!')
     # Recommandation algorithm page     
@@ -183,7 +184,7 @@ elif dashboard == 'Crush':
     num_sim = st.slider('How many similar movies do you want to see?', 1, 10, 5)
     database = st.radio(
     "Select the database to explore :",
-    ('Anglophone', 'Non Anglophone', 'All'))
+    ('All', 'Anglophone', 'Non Anglophone'))
     
     if database == 'Anglophone':
         columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:-4].columns)
