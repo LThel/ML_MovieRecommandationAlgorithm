@@ -1,0 +1,8 @@
+pandas==1.4.4
+matplotlib==3.7.1
+numpy == 1.22.4
+seaborn == 0.12.2
+streamlit==1.20.0
+scikit-learn==1.2.2
+regex == 2023.5.5
+python == 3.10.11
