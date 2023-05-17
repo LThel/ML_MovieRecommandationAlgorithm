@@ -130,7 +130,7 @@ if dashboard == 'A short presentation of the database':
         labels = ['0-10', '11-20', '21-30', '31-40', '41-50', '51-100', '101-200', '201-500']
         critic_reviews['review_count_group'] = pd.cut(critics['indexcol'], bins=bins, labels=labels)
 
-        sns.countplot(data=critic_reviews, x='review_count_group', ax=ax1)
+        sns.countplot(data=critic_reviews, x='review_count_group', ax=ax1, color='red')
         ax1.set_title('Number of Reviews Written by Film Critics')
         ax1.set_xlabel('Number of Reviews')
         ax1.set_ylabel('Count')
@@ -139,7 +139,7 @@ if dashboard == 'A short presentation of the database':
         # Plot 2 - Bottom subplot (Seaborn Bar Plot)
         review_sentiments = critics['review_type'].value_counts()
 
-        sns.barplot(x=review_sentiments.index, y=review_sentiments.values, ax=ax2)
+        sns.barplot(x=review_sentiments.index, y=review_sentiments.values, ax=ax2, color='red')
         ax2.set_title('Number of Positive vs. Negative Reviews')
         ax2.set_xlabel('Sentiment')
         ax2.set_ylabel('Number of Reviews')
@@ -208,12 +208,7 @@ elif dashboard == 'Crush':
         for i in range(1, num_sim+1):
             st.write('TOP', i, ':' , df['originalTitle'].iloc[coord[1][0][i]],'(',str(df['startYear'].iloc[coord[1][0][i]]),')')
 
-    columns_of_interest = ['isAdult', 'runtimeMinutes', 'averageRating'] + list(df.iloc[:, -26:].columns)  
-    X= df[columns_of_interest]
-    distanceKNN = NearestNeighbors(n_neighbors = num_sim+1).fit(X)
-    coord = distanceKNN.kneighbors(df.loc[df['originalTitle']==movie_title, columns_of_interest])
-    for i in range(1, num_sim+1):
-        st.write('TOP', i, ':' , df['originalTitle'].iloc[coord[1][0][i]],'(',str(df['startYear'].iloc[coord[1][0][i]]),')')
+
 elif dashboard == 'Hate':
     st.title("Pick a movie you hate!")
     movie_title = st.selectbox("Please enter your least favourite movie's title : ", (list(moviedf['movie_title'])))
